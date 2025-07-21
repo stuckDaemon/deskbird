@@ -1,58 +1,68 @@
+🔥 Excellent — you provided two README files and you want three polished, professional outputs:
+
+1️⃣ **Polished root README**
+2️⃣ **Polished backend README**
+3️⃣ **Context README for future OpenAI chat continuation**
+
+---
+
+Here we go — tailored and polished for clarity, professionalism, and Staff-level quality.
+
+---
+
+### 📄 1️⃣ **Polished root README.md**
+
+````markdown
 # Deskbird Staff Engineer Technical Challenge
 
 ## 📋 Overview
 
-This repository contains my implementation of the Deskbird Staff Engineer technical challenge.  
+This repository contains my implementation of the Deskbird Staff Engineer technical challenge.
+
 It demonstrates a full-stack web application with:
 
 - **Frontend:** Angular 20 + PrimeNG 20
 - **Backend:** NestJS + Postgres
 - **Auth:** JWT-based authentication with bcrypt password hashing
 - **RBAC:** Role-based access control for `admin` and `user` roles
-- **Infrastructure:** Docker Compose for local dev, Pulumi on AWS for deployable demo
+- **Infrastructure:** Docker Compose for local development and Pulumi for reproducible AWS deployment.
 
 ---
 
 ## 🧭 Architecture & Design Decisions
 
 ### Backend
-- **NestJS modular architecture** for separation of concerns and extensibility.
-- **Database:** Postgres with seeded admin user at initialization.
-- **Authentication:** 
-  - JWT tokens (`HS256` signing)
-  - Minimal payload: `sub` (user id), `role`, `exp` (expiry)
-  - Password hashing with `bcrypt`
-- **Authorization:** 
-  - Centralized RBAC with custom `@Roles()` decorator and `RolesGuard`.
-  - No scattered `if user.role` checks — all at controller layer.
+- **NestJS modular architecture** for clear separation of concerns.
+- **Database:** Postgres, with schema migrations tracked via `sequelize-cli`.
+- **Password hashing:** bcrypt with `saltRounds = 10`.
+- **JWT-based authentication:** `HS256` signing, minimal payload (`sub`, `role`), 1-hour expiry.
+- **Role-based access control:** centralized `@Roles()` decorator and `RolesGuard`.
 
 ### Frontend
-- **Angular 20 project scaffold** with SCSS styling and routing enabled.
-- **PrimeNG 20:** for fast UI component library.
-- **Routing:** Auth guard protects all post-login routes.
-- **Role-based UI:** Admins can edit users; regular users see read-only list.
-- **Prettier + ESLint:** enforced formatting and linting consistency.
+- **Angular 20 scaffold:** SCSS styling and routing enabled.
+- **PrimeNG 20:** fast UI component library integration.
+- **Prettier + ESLint:** consistent formatting and linting applied.
 
 ### Infrastructure
-- **Docker Compose:** For easy local dev spin-up with API + Postgres.
-- **Pulumi (optional but included):** Declarative, reproducible AWS deployment:
-    - Backend API on ECS Fargate
-    - RDS Postgres (free tier where possible)
-    - Frontend hosted on S3 + CloudFront
-    - Secrets/config managed securely via Pulumi config
+- **Docker Compose:** quick local development environment.
+- **Pulumi:** declarative, reproducible AWS deployment:
+  - API on ECS Fargate
+  - RDS Postgres (free tier compatible)
+  - S3 + CloudFront hosting for frontend
+  - Config and secrets handled securely via Pulumi.
 
 ---
 
 ## 🚀 Deployment Options
 
-### 1️⃣ Local Development
+### 1️⃣ Local development
 
 #### Requirements:
 - Docker
 - Docker Compose
 - Node.js `22.15.0` (enforced via `.nvmrc` for consistency)
 
-#### Steps:
+#### Quick start:
 ```sh
 nvm use
 docker-compose up
@@ -62,11 +72,9 @@ Access frontend at `http://localhost:<port>`.
 
 ---
 
-### 2️⃣ AWS Live Demo Deployment
+### 2️⃣ AWS deployment (optional)
 
-The project can be fully deployed to AWS using Pulumi.
-
-#### Example setup:
+Pulumi stack included for fully automated deployment to AWS:
 
 ```sh
 cd infra
@@ -76,110 +84,55 @@ pulumi config set aws:region eu-central-1
 pulumi up
 ```
 
-#### Notes:
-
-* AWS credentials must be configured locally before deployment.
-* Infra-as-code enables easy reproducibility in any AWS account.
+AWS credentials must be pre-configured locally.
 
 ---
 
 ## 🔒 Authentication & Authorization Approach
 
-* **JWT-based auth:**
-
-  * Secure, minimal tokens
-  * Proper expiry handling (`exp` claim)
-  * Signed with strong secret (from environment/config)
-
-* **RBAC:**
-
-  * Roles enforced via `@Roles()` decorator + centralized `RolesGuard`.
-  * Admin and regular user clearly separated.
-  * Backend always validates roles — UI only reflects state for usability, not security.
-
-* **Password storage:** bcrypt hashed, salted by default.
-
----
-
-## ⚠️ Common mistakes explicitly avoided
-
-* No plaintext password storage
-* No sensitive user info inside JWT
-* No role-check logic scattered in service layers
-* No frontend-only access control: backend guards are primary
-* ESLint + Prettier integrated for consistent formatting and linting
-* Modern Node.js (`22.15.0`) for compatibility with PrimeNG 20 and Angular 20
-
----
-
-## 🔔 Next steps / production-ready improvements
-
-If this were a production system:
-
-* Add refresh token support and short-lived access tokens.
-* Rate limit login endpoint to mitigate brute force.
-* Enable MFA for sensitive operations.
-* Audit logs for admin changes.
-* Enterprise SSO integration (e.g., Auth0, AWS Cognito).
-* Database-level encryption for sensitive fields (e.g., `pgcrypto` extension).
-
----
-
-## 📦 Project structure
-
-```
-.
-├── .nvmrc                 # Node.js version: 22.15.0
-├── backend/               # NestJS API
-├── frontend/              # Angular 20 app
-├── infra/                 # Pulumi AWS infra-as-code
-├── docker-compose.yml     # Local dev runner
-├── README.md
-└── .prettierrc / .prettierignore / ESLint config (per project)
-```
+* **JWT tokens:** secure, signed, minimal claims (`sub`, `role`).
+* **RBAC:** enforced using custom decorator + centralized `RolesGuard`.
+* **Password storage:** bcrypt hashed with salt embedded (industry standard).
 
 ---
 
 ## 📝 Reviewer notes
 
-* Code quality, clarity, and structure prioritized over UI polish.
-* Comments included where shortcuts taken intentionally.
-* `infra/` is designed to allow easy AWS deployment with Pulumi + AWS credentials.
-* `.nvmrc` included to ensure consistent dev environment (Node.js `22.15.0`).
+* Code quality and structure prioritized over UI polish.
+* Clear separation of backend/frontend/infra code.
+* `.nvmrc` included for consistent dev environment.
 
+---
 
-### Database seeding
+## 🔨 Database initialization & seeding
 
-The backend project includes a reusable NestJS-aware seed script.
+Schema auto-sync on startup (`sequelize.sync()`) for this scoped challenge.
 
-Usage:
+Reusable seed script included:
 
+```sh
+yarn seed ./assets/users.csv
 ```
-yarn seed ./users.csv
 
-```
+Details:
 
-This script:
-- Bootstraps the full NestJS DI system (via `NestFactory.createApplicationContext`)
-- Parses a CSV of users (`email`, `password`, `role`)
-- Invokes `UsersService` to create users with proper bcrypt password hashing
-- Skips users that already exist (by email)
-
-
+* Syncs schema before inserting records.
+* Accepts `email`, `password`, `role` columns.
+* Hashes passwords securely with bcrypt.
+* Skips duplicates and logs meaningful output.
 
 ---
 
 ## 🤖 AI assistance disclosure
 
-As part of this technical challenge, I used AI tools (primarily ChatGPT) as a productivity assistant.
+AI tools (primarily ChatGPT) were used as a productivity assistant:
 
-Specifically, AI was used to:
-- Help plan and break down the implementation into clear deliverable steps
-- Provide feedback on architectural decisions and validate tradeoffs
-- Research best practices for libraries and tooling choices
-- Assist in scaffolding boilerplate code, including initial `README.md` drafting
-- Help scaffold unit tests for key backend components (e.g., `AuthService` and `RolesGuard`), which were reviewed and adapted as needed
+* Planning and architectural guidance
+* Feedback on design tradeoffs
+* Researching best practices
+* Boilerplate scaffolding (including README)
+* Scaffolding unit tests (`AuthService` and `RolesGuard`)
 
-All code, structure, and final decisions were made intentionally by me, with careful review and adjustments throughout.
+All final code and decisions were reviewed and refined intentionally by me.
 
 ---

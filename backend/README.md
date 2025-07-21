@@ -1,127 +1,76 @@
 # Backend
 
-This folder contains the backend API built with NestJS, Sequelize, and Postgres.
+This folder contains the backend API for the Deskbird Staff Engineer challenge.
+
+Built with **NestJS, Sequelize, Postgres**, following modern architecture and authentication patterns.
 
 ---
 
-## 📋 Design decisions
+## 📋 Design highlights
 
-### Sequelize ORM choice
-I chose Sequelize over TypeORM for explicit control and cleaner separation of migrations, models, and runtime behavior.
+### ORM choice
+Sequelize selected for explicit control over migrations and runtime behavior.
 
 ---
 
-### Migrations
-
-- All schema changes are tracked using `sequelize-cli` migrations.
-- `synchronize` is explicitly disabled in the Sequelize config to ensure migrations remain the single source of truth for schema management.
+### Schema migrations
+- All schema changes tracked via `sequelize-cli`.
+- Auto `sequelize.sync()` used for this scoped project to simplify startup and seeding (not recommended for production).
 
 ---
 
 ### Metadata column on `SequelizeMeta`
-
-A custom migration adds an additional `executed_at` column to the `SequelizeMeta` table.
-
-This column records the timestamp when each migration was applied, enabling better operational observability.
-
-Example:
-```sql
-SELECT * FROM "SequelizeMeta";
-````
-
-This allows tracking not just *which migrations ran* but also *when* they ran — useful for debugging and audit trails.
+Custom migration adds `executed_at` timestamp column for tracking when migrations were applied — useful for audits.
 
 ---
 
-### Indexing
-
-* No explicit additional index was created on the `users.email` column.
-* The `users.email` column has a `unique: true` constraint, which **implicitly creates a unique index in Postgres**.
-
-👉 **Rationale:**
-At this stage, we keep the schema lean and avoid redundant indexes.
-Future indexing decisions should be driven by actual query patterns and performance profiling.
+### Indexing strategy
+- `users.email` column has a `unique: true` constraint, creating an implicit unique index.
+- No redundant indexes added intentionally to keep schema lean.
 
 ---
 
 ### UUID primary keys
-
-* The `users.id` column is a UUID primary key.
-* We enabled the Postgres `uuid-ossp` extension explicitly via a migration to ensure consistent UUID generation using `uuid_generate_v4()`.
-
----
-
-## 📦 Structure overview
-
-```
-src/
-  ├── app.module.ts
-  ├── users/
-  ├── auth/
-  ├── scripts/
-  └── main.ts
-```
+- `users.id` is UUID (`uuid_generate_v4()`).
+- Postgres `uuid-ossp` extension enabled via migration.
 
 ---
 
-## 🔒 Authentication and authorization
+## 🔒 Auth approach
 
-* JWT-based auth with bcrypt password hashing.
-* Role-based access control (RBAC) via `@Roles()` decorator and `RolesGuard`.
-
----
-
-## 🔒 JWT expiration policy
-
-This implementation sets the access token expiration to 1 hour (`expiresIn: '1h'`), balancing session longevity with reduced risk if a token leaks.
-
-### Why 1 hour?
-- A short-lived token reduces the impact of token compromise.
-- It aligns with common best practices for stateless APIs.
-
-### Production considerations
-In a production system, I would implement a refresh token strategy:
-- Access tokens would expire in 15–30 minutes.
-- Refresh tokens would enable re-authentication without requiring the user to log in again.
-- Refresh tokens would be securely stored (HTTP-only cookies) and rotated to prevent replay attacks.
-
-Additionally:
-- Admin or privileged sessions would require MFA.
-- Tokens would be auditable, with suspicious patterns monitored and revoked if needed.
+- JWT-based auth (`HS256`, 1-hour expiry).
+- bcrypt for password hashing.
+- Role-based authorization (`@Roles()` decorator + `RolesGuard`).
 
 ---
 
-## 📝 Notes
+## 📝 JWT expiry decision
 
-This backend API is fully decoupled from environment configuration via `.env` variables and works out of the box with Docker Compose for local development.
-
-
----
-
-## 🔄 Auth workflow diagram
-![auth-diagram.png](assets/auth-diagram.png)
-
-
+Why 1 hour?
+- Balance security and session longevity.
+- Production would include refresh tokens and short-lived access tokens for better security posture.
 
 ---
 
-## 🔨 Database initialization and seeding
+## 🔨 Database seeding
 
-On application startup, the database schema is automatically synchronized using `sequelize.sync()` for simplicity in this scoped project (in production, migrations would be preferred for auditability and control).
-
-A reusable seed script is included for loading test data.
-
-### How to run the seed script:
+Reusable script:
 
 ```sh
 yarn seed ./assets/users.csv
 ````
 
-This command:
+Behavior:
 
-* Ensures the database schema is synchronized before inserting records.
-* Accepts a flexible CSV input file with columns: `email`, `password`, `role`.
-* Automatically hashes passwords using bcrypt.
-* Skips duplicate emails and logs meaningful output.
+* Ensures DB schema sync before insert.
+* Accepts CSV with `email`, `password`, `role`.
+* Skips duplicate emails.
+* Hashes passwords securely.
+
+---
+
+## 🔄 Auth workflow diagram
+
+![auth-diagram.png](assets/auth-diagram.png)
 
 ---

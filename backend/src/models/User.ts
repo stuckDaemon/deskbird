@@ -19,16 +19,16 @@ export class User extends Model {
     unique: true,
     allowNull: false,
   })
-  email: string;
+  declare email: string;
 
   @Column({
     allowNull: false,
   })
-  password: string;
+  declare password: string;
 
   @Column({
     type: DataType.ENUM(...Object.values(Role)),
     allowNull: false,
   })
-  role: Role;
+  declare role: Role;
 }
