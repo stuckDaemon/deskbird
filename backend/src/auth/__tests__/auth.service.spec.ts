@@ -3,10 +3,7 @@ import { AuthService } from '../auth.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UnauthorizedException } from '@nestjs/common';
-import { UsersService } from '../../services/users/users.service';
-import { User } from '../../models/User';
-import { SequelizeModule } from '@nestjs/sequelize';
-import { databaseTestConfig } from '../../config/database/database.test.config';
+import { UserService } from '../../services/users/user.service';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn(),
@@ -14,7 +11,7 @@ jest.mock('bcrypt', () => ({
 
 describe('AuthService', () => {
   let service: AuthService;
-  let usersService: Partial<UsersService>;
+  let usersService: Partial<UserService>;
   let jwtService: Partial<JwtService>;
 
   beforeAll(async () => {
@@ -28,7 +25,7 @@ describe('AuthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        { provide: UsersService, useValue: usersService },
+        { provide: UserService, useValue: usersService },
         { provide: JwtService, useValue: jwtService },
       ],
     }).compile();

@@ -1,4 +1,4 @@
-import winston from 'winston';
+import * as winston from 'winston';
 
 // Utility function to get the current function name from the stack
 function getFunctionName(): string {

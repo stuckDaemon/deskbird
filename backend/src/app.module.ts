@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { dataBaseConfig } from './config/database/database.config';
-import { UsersModule } from './services/users/users.module';
+import { UserModule } from './services/users/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthModule } from './auth/auth.module';
@@ -16,7 +16,7 @@ import { AuthModule } from './auth/auth.module';
       secret: process.env.JWT_SECRET || 'change_this_secret',
       signOptions: { expiresIn: '1h' },
     }),
-    UsersModule,
+    UserModule,
     AuthModule,
   ],
 

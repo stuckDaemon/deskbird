@@ -100,3 +100,28 @@ This backend API is fully decoupled from environment configuration via `.env` va
 
 ## 🔄 Auth workflow diagram
 ![auth-diagram.png](assets/auth-diagram.png)
+
+
+
+---
+
+## 🔨 Database initialization and seeding
+
+On application startup, the database schema is automatically synchronized using `sequelize.sync()` for simplicity in this scoped project (in production, migrations would be preferred for auditability and control).
+
+A reusable seed script is included for loading test data.
+
+### How to run the seed script:
+
+```sh
+yarn seed ./assets/users.csv
+````
+
+This command:
+
+* Ensures the database schema is synchronized before inserting records.
+* Accepts a flexible CSV input file with columns: `email`, `password`, `role`.
+* Automatically hashes passwords using bcrypt.
+* Skips duplicate emails and logs meaningful output.
+
+---
