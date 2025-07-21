@@ -165,3 +165,21 @@ This script:
 - Invokes `UsersService` to create users with proper bcrypt password hashing
 - Skips users that already exist (by email)
 
+
+
+---
+
+## 🤖 AI assistance disclosure
+
+As part of this technical challenge, I used AI tools (primarily ChatGPT) as a productivity assistant.
+
+Specifically, AI was used to:
+- Help plan and break down the implementation into clear deliverable steps
+- Provide feedback on architectural decisions and validate tradeoffs
+- Research best practices for libraries and tooling choices
+- Assist in scaffolding boilerplate code, including initial `README.md` drafting
+
+All code, structure, and final decisions were made intentionally by me, with careful review and adjustments throughout.
+
+---
+
