@@ -178,8 +178,8 @@ Specifically, AI was used to:
 - Provide feedback on architectural decisions and validate tradeoffs
 - Research best practices for libraries and tooling choices
 - Assist in scaffolding boilerplate code, including initial `README.md` drafting
+- Help scaffold unit tests for key backend components (e.g., `AuthService` and `RolesGuard`), which were reviewed and adapted as needed
 
 All code, structure, and final decisions were made intentionally by me, with careful review and adjustments throughout.
 
 ---
-
