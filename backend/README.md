@@ -71,6 +71,32 @@ src/
 
 ---
 
+## 🔒 JWT expiration policy
+
+This implementation sets the access token expiration to 1 hour (`expiresIn: '1h'`), balancing session longevity with reduced risk if a token leaks.
+
+### Why 1 hour?
+- A short-lived token reduces the impact of token compromise.
+- It aligns with common best practices for stateless APIs.
+
+### Production considerations
+In a production system, I would implement a refresh token strategy:
+- Access tokens would expire in 15–30 minutes.
+- Refresh tokens would enable re-authentication without requiring the user to log in again.
+- Refresh tokens would be securely stored (HTTP-only cookies) and rotated to prevent replay attacks.
+
+Additionally:
+- Admin or privileged sessions would require MFA.
+- Tokens would be auditable, with suspicious patterns monitored and revoked if needed.
+
+---
+
 ## 📝 Notes
 
 This backend API is fully decoupled from environment configuration via `.env` variables and works out of the box with Docker Compose for local development.
+
+
+---
+
+## 🔄 Auth workflow diagram
+![auth-diagram.png](assets/auth-diagram.png)
