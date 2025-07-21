@@ -1,0 +1,14 @@
+{
+    "name": "infra",
+    "main": "index.ts",
+    "devDependencies": {
+        "@types/node": "^24.0.15",
+        "typescript": "^5.8.3"
+    },
+    "dependencies": {
+        "@pulumi/aws": "^7.0.0",
+        "@pulumi/awsx": "^2.0.2",
+        "@pulumi/docker": "^4.8.0",
+        "@pulumi/pulumi": "^3.113.0"
+    }
+}
