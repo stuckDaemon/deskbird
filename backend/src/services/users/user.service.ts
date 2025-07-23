@@ -17,7 +17,21 @@ export class UserService {
   }
 
   async findByEmail(email: string) {
-    return await User.findOne({ where: { email: email } });
+    try {
+      return await User.findOne({ where: { email: email } });
+    } catch (error) {
+      logger.error(`Error finding the user with email ${email}`);
+      throw error;
+    }
+  }
+
+  async findById(id: string) {
+    try {
+      return await User.findByPk(id);
+    } catch (error) {
+      logger.debug(`Error finding user by ID ${id}`);
+      throw error;
+    }
   }
 
   async create(data: CreateUserInput): Promise<User> {

@@ -3,6 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../services/users/user.service';
 import { User } from '../models/User';
+import { LoginDto } from './dto/login.dto';
+import { logger } from '../config/winston.config';
 
 @Injectable()
 export class AuthService {
@@ -11,22 +13,26 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-    const isMatch = await bcrypt.compare(pass, user.password);
-    if (!isMatch) {
-      throw new UnauthorizedException();
-    }
-    return user;
-  }
+  async login(loginDto: LoginDto): Promise<{ access_token: string }> {
+    const user = await this.validateUser(loginDto);
 
-  async login(user: User) {
     const payload = { sub: user.id, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
     };
+  }
+
+  async validateUser(loginDto: LoginDto): Promise<User> {
+    const user = await this.usersService.findByEmail(loginDto.email);
+    if (!user) {
+      logger.error(`User not found for email ${loginDto.email}`);
+      throw new UnauthorizedException();
+    }
+    const isMatch = await bcrypt.compare(loginDto.password, user.password);
+    if (!isMatch) {
+      logger.error('Comparison not matching');
+      throw new UnauthorizedException();
+    }
+    return user;
   }
 }
