@@ -13,14 +13,13 @@
             id="email"
             pInputText
             type="email"
+            placeholder="admin@example.com"
             [(ngModel)]="email"
             name="email"
             required
+            [minLength]="4"
             autocomplete="email"
           />
-          @if (!email) {
-            <p-message severity="error" variant="simple" size="small">Email is required</p-message>
-          }
         </p-inputgroup>
       </div>
 
@@ -35,18 +34,14 @@
             pPassword
             [(ngModel)]="password"
             name="password"
+            placeholder="password123"
             required
             feedback="false"
           />
-          @if (!password) {
-            <p-message severity="error" variant="simple" size="small"
-              >Password is required</p-message
-            >
-          }
         </p-inputgroup>
-          @if (errorMessage) {
-              <p-message severity="error" variant="simple" size="small">{{ errorMessage }}</p-message>
-          }
+        @if (errorMessage) {
+          <p-message severity="error" variant="simple" size="small">{{ errorMessage }}</p-message>
+        }
       </div>
 
       <button pButton type="submit" label="Login" class="w-full p-button p-component"></button>

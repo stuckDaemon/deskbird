@@ -26,8 +26,8 @@ import { Message } from 'primeng/message';
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
-  email = 'admin@example.com';
-  password = 'password123';
+  email = '';
+  password = '';
   errorMessage = '';
 
   constructor(

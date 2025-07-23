@@ -1,44 +1,28 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { mapTo, Observable, tap } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
-import { environment } from '../environment';
 import { clearToken, clearUser, getToken, getUser, setToken, setUser } from './utils/session.util';
+import { DecodedToken, LoginResponse } from './auth.interface';
+import { ApiService } from '../service/api.service';
 
-interface LoginResponse {
-  access_token: string;
-}
-
-interface DecodedToken {
-  sub: string;
-  role: 'admin' | 'user';
-  exp: number;
-}
-
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly TOKEN_KEY = 'auth_token';
-
   constructor(
-    private http: HttpClient,
+    private apiService: ApiService,
     private router: Router
   ) {}
+  login(email: string, password: string): Observable<void> {
+    return this.apiService.post<LoginResponse>('auth/login', { email, password }).pipe(
+      tap((res) => {
+        const token = res.access_token;
+        setToken(token);
 
-  login(email: string, password: string): Observable<LoginResponse> {
-    return this.http
-      .post<LoginResponse>(`${environment.apiUrl}/auth/login`, { email, password })
-      .pipe(
-        tap((response) => {
-          const token = response.access_token;
-          setToken(token);
-
-          const decoded = jwtDecode<DecodedToken>(token);
-          setUser({ id: decoded.sub, role: decoded.role });
-        })
-      );
+        const decoded = jwtDecode<DecodedToken>(token);
+        setUser({ id: decoded.sub, role: decoded.role });
+      }),
+      mapTo(void 0)
+    );
   }
 
   logout(): void {

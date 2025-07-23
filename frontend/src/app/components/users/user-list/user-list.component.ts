@@ -1,10 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { TableModule } from 'primeng/table';
 import { AppTopbar } from '../../app.topbar';
 import { User } from '../../../models/user.model';
-import { environment } from '../../../environment';
 import { Dialog } from 'primeng/dialog';
 import { InputGroup, InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddon, InputGroupAddonModule } from 'primeng/inputgroupaddon';
@@ -13,6 +11,7 @@ import { Message } from 'primeng/message';
 import { AuthService } from '../../../core/auth.service';
 import { Button, ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { ApiService } from '../../../service/api.service';
 
 @Component({
   selector: 'app-user-list',
@@ -44,9 +43,10 @@ export class UserListComponent {
   totalRecords = 0;
   rows = 10;
   isLoading = false;
+  errorMessage = '';
 
   constructor(
-    private http: HttpClient,
+    private apiService: ApiService,
     private authService: AuthService
   ) {}
 
@@ -57,23 +57,18 @@ export class UserListComponent {
     const limit = event.rows || this.rows;
     this.rows = limit;
 
-    this.http
-      .get<{
-        data: User[];
-        total: number;
-      }>(`${environment.apiUrl}/users?offset=${offset}&limit=${limit}`)
-      .subscribe({
-        next: ({ data, total }) => {
-          this.users = data;
-          this.totalRecords = total;
-          this.isLoading = false;
-        },
-        error: () => {
-          this.users = [];
-          this.totalRecords = 0;
-          this.isLoading = false;
-        },
-      });
+    this.apiService.get<{ data: User[]; total: number }>('users', { offset, limit }).subscribe({
+      next: ({ data, total }) => {
+        this.users = data;
+        this.totalRecords = total;
+      },
+      error: (err) => {
+        this.errorMessage = err.message;
+      },
+      complete: () => {
+        this.isLoading = false;
+      },
+    });
   }
 
   get isAdmin(): boolean {
@@ -97,13 +92,13 @@ export class UserListComponent {
 
     this.isLoading = true;
 
-    this.http.put(`${environment.apiUrl}/users/${this.selectedUser.id}`, dto).subscribe({
+    this.apiService.put(`users/${this.selectedUser.id}`, dto).subscribe({
       next: () => {
         this.displayEditDialog = false;
         this.isLoading = false;
       },
-      error: () => {
-        // Optional: add a toast or error message
+      error: (error) => {
+        this.errorMessage = error.message;
         this.displayEditDialog = false;
         this.isLoading = false;
       },

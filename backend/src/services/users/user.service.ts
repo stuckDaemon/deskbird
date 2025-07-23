@@ -65,7 +65,7 @@ export class UserService {
     }
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<void> {
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<SafeUser[]> {
     const userToEdit = await this.findById(id);
     if (!userToEdit) {
       throw new ConflictException('User not found');
@@ -74,6 +74,6 @@ export class UserService {
     if (userToEdit.role !== Role.User) {
       throw new ForbiddenException('Admins can only edit users with role "user"');
     }
-    await userToEdit.update(updateUserDto);
+    return mapToSafeUser([await userToEdit.update(updateUserDto)]);
   }
 }
