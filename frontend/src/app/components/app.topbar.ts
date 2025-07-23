@@ -14,9 +14,9 @@ import { LayoutService } from '../service/layout.service';
     >
       <span class="hidden sm:flex flex-col">
         <span class="text-xl font-light text-surface-700 dark:text-surface-100 leading-none">
-          Deskbird
+          Gabriele Bonadiman
         </span>
-        <span class="text-sm font-medium text-primary leading-tight"> Gabriele Bonadiman </span>
+        <span class="text-sm font-medium text-primary leading-tight"> Assignment</span>
       </span>
 
       <button

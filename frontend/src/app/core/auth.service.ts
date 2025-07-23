@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { environment } from '../environment';
+import { clearToken, clearUser, getToken, getUser, setToken, setUser } from './utils/session.util';
 
 interface LoginResponse {
   access_token: string;
@@ -31,18 +32,23 @@ export class AuthService {
       .post<LoginResponse>(`${environment.apiUrl}/auth/login`, { email, password })
       .pipe(
         tap((response) => {
-          localStorage.setItem(this.TOKEN_KEY, response.access_token);
+          const token = response.access_token;
+          setToken(token);
+
+          const decoded = jwtDecode<DecodedToken>(token);
+          setUser({ id: decoded.sub, role: decoded.role });
         })
       );
   }
 
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
+    clearToken();
+    clearUser();
     this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    return getToken();
   }
 
   isAuthenticated(): boolean {
@@ -59,14 +65,7 @@ export class AuthService {
   }
 
   getUserRole(): 'admin' | 'user' | null {
-    const token = this.getToken();
-    if (!token) return null;
-
-    try {
-      const decoded = jwtDecode<DecodedToken>(token);
-      return decoded.role;
-    } catch (_) {
-      return null;
-    }
+    const user = getUser();
+    return user?.role ?? null;
   }
 }

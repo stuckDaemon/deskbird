@@ -41,6 +41,15 @@ export class User extends Model {
   })
   declare role: Role;
 
+  @Column(DataType.STRING)
+  declare firstName: string;
+
+  @Column(DataType.STRING)
+  declare lastName: string;
+
+  @Column(DataType.INTEGER)
+  declare age: number;
+
   @BeforeSave
   static checkPasswordIsHashed(user: User) {
     const isLikelyHashed = user.password.startsWith('$2') && user.password.length >= 60;

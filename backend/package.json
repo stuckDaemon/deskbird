@@ -7,6 +7,9 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "db:create": "npx sequelize db:create --env local",
+    "db:drop": "npx sequelize db:drop --env local",
+    "db:migrations": "npx sequelize db:migrate --env local",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "migrate": "npx sequelize-cli db:migrate",

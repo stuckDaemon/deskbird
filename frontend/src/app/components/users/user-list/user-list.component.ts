@@ -5,21 +5,50 @@ import { TableModule } from 'primeng/table';
 import { AppTopbar } from '../../app.topbar';
 import { User } from '../../../models/user.model';
 import { environment } from '../../../environment';
+import { Dialog } from 'primeng/dialog';
+import { InputGroup, InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddon, InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { FormsModule } from '@angular/forms';
+import { Message } from 'primeng/message';
+import { AuthService } from '../../../core/auth.service';
+import { Button, ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
   templateUrl: './user-list.html',
-  styleUrl: './user-list.scss',
-  imports: [CommonModule, TableModule, AppTopbar],
+  imports: [
+    CommonModule,
+    TableModule,
+    AppTopbar,
+    Dialog,
+    InputGroup,
+    CommonModule,
+    FormsModule,
+    InputTextModule,
+    ButtonModule,
+    InputGroupModule,
+    InputGroupAddonModule,
+    Message,
+    InputGroupAddon,
+    FormsModule,
+    Message,
+    Button,
+  ],
 })
 export class UserListComponent {
   users: User[] = [];
+  selectedUser: User | null = null;
+  displayEditDialog = false;
   totalRecords = 0;
-  isLoading = false;
   rows = 10;
+  isLoading = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
 
   loadUsersLazy(event: any): void {
     this.isLoading = true;
@@ -45,5 +74,39 @@ export class UserListComponent {
           this.isLoading = false;
         },
       });
+  }
+
+  get isAdmin(): boolean {
+    return this.authService.getUserRole() === 'admin';
+  }
+
+  onEditUser(user: User) {
+    if (user.role !== 'user') return;
+    this.selectedUser = { ...user };
+    this.displayEditDialog = true;
+  }
+
+  updateUser() {
+    if (!this.selectedUser) return;
+
+    const dto = {
+      firstName: this.selectedUser.firstName,
+      lastName: this.selectedUser.lastName,
+      age: this.selectedUser.age,
+    };
+
+    this.isLoading = true;
+
+    this.http.put(`${environment.apiUrl}/users/${this.selectedUser.id}`, dto).subscribe({
+      next: () => {
+        this.displayEditDialog = false;
+        this.isLoading = false;
+      },
+      error: () => {
+        // Optional: add a toast or error message
+        this.displayEditDialog = false;
+        this.isLoading = false;
+      },
+    });
   }
 }

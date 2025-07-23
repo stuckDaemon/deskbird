@@ -41,7 +41,6 @@ export class LoginComponent {
         this.router.navigate(['/users']);
       },
       error: (err) => {
-        console.error('Login failed:', err);
         this.errorMessage = 'Invalid email or password.';
       },
     });

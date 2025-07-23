@@ -12,10 +12,11 @@ async function seed(filePath: string) {
   const usersService = app.get(UserService);
 
   const file = fs.readFileSync(filePath, 'utf-8');
-  const records = parse<CreateUserInput>(file, {
+  const records = parse(file, {
     columns: true,
     skip_empty_lines: true,
-  });
+    trim: true,
+  }) as CreateUserInput[];
 
   const failedEmails: string[] = [];
 
@@ -24,11 +25,25 @@ async function seed(filePath: string) {
 
     await Promise.all(
       chunk.map(async (record) => {
-        const { email, password, role } = record;
+        const { email, password, role, firstName, lastName, age } = record;
+
+        if (!email || !password || !firstName || !lastName || !age || !role) {
+          console.log(`Skipping incomplete user record: ${JSON.stringify(record)}`);
+          failedEmails.push(email ?? 'unknown');
+          return;
+        }
+
         try {
-          await usersService.create({ email, password, role });
+          await usersService.create({
+            email,
+            password,
+            role,
+            firstName,
+            lastName,
+            age: Number(age),
+          });
           console.log(`Seeded user: ${email}`);
-        } catch (err) {
+        } catch (err: any) {
           console.log(`Failed to seed user: ${email} (${err.message})`);
           failedEmails.push(email);
         }
@@ -39,7 +54,7 @@ async function seed(filePath: string) {
   }
 
   if (failedEmails.length > 0) {
-    console.log(`Skipped ${failedEmails.length} users due to existing emails:`);
+    console.log(`Skipped ${failedEmails.length} users due to issues:`);
     console.log(failedEmails.join(', '));
   }
 
