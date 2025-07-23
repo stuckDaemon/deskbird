@@ -25,10 +25,6 @@ export class AuthService {
 
   async login(user: User) {
     const payload = { sub: user.id, role: user.role };
-
-    console.log('JWT sign payload:', payload);
-    console.log('JWT secret exists?', !!(this.jwtService as any).secretOrPrivateKey);
-
     return {
       access_token: this.jwtService.sign(payload),
     };

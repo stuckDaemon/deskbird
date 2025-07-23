@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Role } from './role.enum';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
@@ -12,7 +12,7 @@ export class UserController {
 
   @Get()
   @Roles(Role.Admin)
-  async findAll() {
-    return await this.usersService.findAll();
+  async findAll(@Query('offset') offset: string = '0', @Query('limit') limit: string = '10') {
+    return await this.usersService.findAllPaginated(Number(offset), Number(limit));
   }
 }

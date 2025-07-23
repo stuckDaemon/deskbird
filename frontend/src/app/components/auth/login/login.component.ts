@@ -5,10 +5,10 @@ import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth.service';
 import { Router } from '@angular/router';
+import { Message } from 'primeng/message';
 
 @Component({
   selector: 'app-login',
@@ -21,6 +21,7 @@ import { Router } from '@angular/router';
     ButtonModule,
     InputGroupModule,
     InputGroupAddonModule,
+    Message,
   ],
   templateUrl: './login.component.html',
 })

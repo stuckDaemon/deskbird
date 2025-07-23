@@ -7,13 +7,13 @@ import { UniqueConstraintError } from 'sequelize';
 
 @Injectable()
 export class UserService {
-  async findAll() {
-    try {
-      return await User.findAll();
-    } catch (error) {
-      logger.error(error);
-      throw error;
-    }
+  async findAllPaginated(offset = 0, limit = 10): Promise<{ data: User[]; total: number }> {
+    const results = await User.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      order: [['createdAt', 'DESC']],
+    });
+    return { data: results.rows, total: results.count };
   }
 
   async findByEmail(email: string) {

@@ -1,46 +1,42 @@
+<app-topbar />
+
 <div class="card">
     <div class="card-header">
         <h2 class="text-lg font-semibold">User List</h2>
     </div>
 
     <div class="card-content">
-        @if (isLoading) {
-            <p>Loading...</p>
-        } @else if (error) {
-            <p class="text-red-500">{{ error }}</p>
-        } @else {
-            <p-table
-                    [value]="users.slice(first, first + rows)"
-                    [paginator]="true"
-                    [rows]="rows"
-                    [first]="first"
-                    [totalRecords]="totalRecords"
-                    [rowsPerPageOptions]="[5, 10, 25]"
-                    [showCurrentPageReport]="true"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-                    [tableStyle]="{ 'min-width': '50rem' }"
-                    (onPage)="onPageChange($event)"
-                    showGridlines
-                    stripedRows
-            >
-                <ng-template #header>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                    </tr>
-                </ng-template>
+        <p-table
+                [value]="users"
+                [paginator]="true"
+                [rows]="rows"
+                [totalRecords]="totalRecords"
+                [lazy]="true"
+                (onLazyLoad)="loadUsersLazy($event)"
+                [loading]="isLoading"
+                [rowsPerPageOptions]="[5, 10, 25]"
+                currentPageReportTemplate="showing {first} to {last} of {totalRecords}"
+                [tableStyle]="{ 'min-width': '50rem' }"
+                showGridlines
+                stripedRows
+        >
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                </tr>
+            </ng-template>
 
-                <ng-template #body let-user>
-                    <tr>
-                        <td>{{ user.id }}</td>
-                        <td>{{ user.name }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.role || '—' }}</td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        }
+            <ng-template pTemplate="body" let-user>
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.role || '—' }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
     </div>
 </div>
