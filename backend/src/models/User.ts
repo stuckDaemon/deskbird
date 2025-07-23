@@ -1,5 +1,14 @@
-import { Column, DataType, Default, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import {
+  BeforeSave,
+  Column,
+  DataType,
+  Default,
+  Model,
+  PrimaryKey,
+  Table,
+} from 'sequelize-typescript';
 import { Role } from '../services/users/role.enum';
+import { logger } from '../config/winston.config';
 
 @Table({
   tableName: 'users',
@@ -31,4 +40,14 @@ export class User extends Model {
     allowNull: false,
   })
   declare role: Role;
+
+  @BeforeSave
+  static checkPasswordIsHashed(user: User) {
+    const isLikelyHashed = user.password.startsWith('$2') && user.password.length >= 60;
+
+    if (!isLikelyHashed) {
+      logger.error(`User password is not hashed before save (email: ${user.email})`);
+      throw new Error('Password must be hashed before saving.');
+    }
+  }
 }
