@@ -58,10 +58,7 @@ declare type SurfacesType = {
     >
       <div class="flex flex-col gap-4">
         <div>
-          <span
-            class="text-sm text-surface-600 dark:text-surface-400 font-semibold"
-            >Primary</span
-          >
+          <span class="text-sm text-surface-600 dark:text-surface-400 font-semibold">Primary</span>
           <div class="pt-2 flex gap-2 flex-wrap justify-between">
             <button
               *ngFor="let pc of primaryColors()"
@@ -69,9 +66,7 @@ declare type SurfacesType = {
               [title]="pc.name"
               [ngClass]="[
                 'border-none w-5 h-5 rounded-full p-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2',
-                selectedPrimaryColor() === pc.name
-                  ? 'ring-2 ring-primary ring-offset-2'
-                  : ''
+                selectedPrimaryColor() === pc.name ? 'ring-2 ring-primary ring-offset-2' : '',
               ]"
               [ngStyle]="{ backgroundColor: pc?.palette?.['500'] }"
               (click)="updateColors($event, 'primary', pc)"
@@ -79,10 +74,7 @@ declare type SurfacesType = {
           </div>
         </div>
         <div>
-          <span
-            class="text-sm text-surface-600 dark:text-surface-400 font-semibold"
-            >Surface</span
-          >
+          <span class="text-sm text-surface-600 dark:text-surface-400 font-semibold">Surface</span>
           <div class="pt-2 flex gap-2 flex-wrap justify-between">
             <button
               *ngFor="let s of surfaces"
@@ -94,11 +86,11 @@ declare type SurfacesType = {
                   selectedSurface()
                     ? selectedSurface() === s.name
                     : isDarkMode()
-                    ? s.name === 'zinc'
-                    : s.name === 'slate'
+                      ? s.name === 'zinc'
+                      : s.name === 'slate'
                 )
                   ? 'ring-2 ring-primary ring-offset-2'
-                  : ''
+                  : '',
               ]"
               [ngStyle]="{ backgroundColor: s?.palette?.['500'] }"
               (click)="updateColors($event, 'surface', s)"
@@ -281,8 +273,7 @@ export class AppConfig {
 
   primaryColors = computed<SurfacesType[]>(() => {
     const presetPalette =
-      presets[this.layoutService.appState().preset as KeyOfType<typeof presets>]
-        .primitive;
+      presets[this.layoutService.appState().preset as KeyOfType<typeof presets>].primitive;
     const colors = [
       'emerald',
       'green',
@@ -317,9 +308,7 @@ export class AppConfig {
 
   getPresetExt() {
     const color: SurfacesType =
-      this.primaryColors().find(
-        (c) => c.name === this.selectedPrimaryColor()
-      ) || {};
+      this.primaryColors().find((c) => c.name === this.selectedPrimaryColor()) || {};
 
     if (color.name === 'noir') {
       return {
@@ -396,10 +385,8 @@ export class AppConfig {
                 activeColor: '{primary.200}',
               },
               highlight: {
-                background:
-                  'color-mix(in srgb, {primary.400}, transparent 84%)',
-                focusBackground:
-                  'color-mix(in srgb, {primary.400}, transparent 76%)',
+                background: 'color-mix(in srgb, {primary.400}, transparent 84%)',
+                focusBackground: 'color-mix(in srgb, {primary.400}, transparent 76%)',
                 color: 'rgba(255,255,255,.87)',
                 focusColor: 'rgba(255,255,255,.87)',
               },
@@ -441,9 +428,7 @@ export class AppConfig {
       preset: event,
     }));
     const preset = presets[event as KeyOfType<typeof presets>];
-    const surfacePalette = this.surfaces.find(
-      (s) => s.name === this.selectedSurface()
-    )?.palette;
+    const surfacePalette = this.surfaces.find((s) => s.name === this.selectedSurface())?.palette;
     $t()
       .preset(preset)
       .preset(this.getPresetExt())

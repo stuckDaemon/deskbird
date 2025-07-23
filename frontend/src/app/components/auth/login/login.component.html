@@ -1,44 +1,44 @@
 <div class="min-h-screen flex items-center justify-center bg-surface-50 dark:bg-surface-900 p-4">
-    <div class="bg-surface-0 rounded-xl shadow-lg w-full max-w-sm p-6">
-        <h2 class="text-xl font-semibold mb-6 text-center">Login</h2>
+  <div class="bg-surface-0 rounded-xl shadow-lg w-full max-w-sm p-6">
+    <h2 class="text-xl font-semibold mb-6 text-center">Login</h2>
 
-        <form class="space-y-4" (submit)="login()">
-            <div>
-                <label for="email" class="block text-sm font-medium text-color">Email</label>
-                <p-inputgroup>
-                    <p-inputgroup-addon>
-                        <i class="pi pi-envelope"></i>
-                    </p-inputgroup-addon>
-                    <input
-                            id="email"
-                            pInputText
-                            type="email"
-                            [(ngModel)]="email"
-                            name="email"
-                            required
-                            autocomplete="email"
-                    />
-                </p-inputgroup>
-            </div>
+    <form class="space-y-4" (submit)="login()">
+      <div>
+        <label for="email" class="block text-sm font-medium text-color">Email</label>
+        <p-inputgroup>
+          <p-inputgroup-addon>
+            <i class="pi pi-envelope"></i>
+          </p-inputgroup-addon>
+          <input
+            id="email"
+            pInputText
+            type="email"
+            [(ngModel)]="email"
+            name="email"
+            required
+            autocomplete="email"
+          />
+        </p-inputgroup>
+      </div>
 
-            <div>
-                <label for="password" class="block text-sm font-medium text-color">Password</label>
-                <p-inputgroup>
-                    <p-inputgroup-addon>
-                        <i class="pi pi-lock"></i>
-                    </p-inputgroup-addon>
-                    <input
-                            id="password"
-                            pPassword
-                            [(ngModel)]="password"
-                            name="password"
-                            required
-                            feedback="false"
-                    />
-                </p-inputgroup>
-            </div>
+      <div>
+        <label for="password" class="block text-sm font-medium text-color">Password</label>
+        <p-inputgroup>
+          <p-inputgroup-addon>
+            <i class="pi pi-lock"></i>
+          </p-inputgroup-addon>
+          <input
+            id="password"
+            pPassword
+            [(ngModel)]="password"
+            name="password"
+            required
+            feedback="false"
+          />
+        </p-inputgroup>
+      </div>
 
-            <button pButton type="submit" label="Login" class="w-full p-button p-component"></button>
-        </form>
-    </div>
+      <button pButton type="submit" label="Login" class="w-full p-button p-component"></button>
+    </form>
+  </div>
 </div>

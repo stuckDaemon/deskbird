@@ -33,9 +33,7 @@ interface Product {
     <div
       class="bg-surface-0 dark:bg-surface-900 p-6 rounded-xl border border-surface-200 dark:border-surface-700 flex flex-col gap-4"
     >
-      <div
-        class="flex sm:items-center justify-between mb-4 sm:flex-row flex-col gap-2"
-      >
+      <div class="flex sm:items-center justify-between mb-4 sm:flex-row flex-col gap-2">
         <span class="font-medium text-base">Products Overview</span>
         <p-iconfield class="sm:w-auto w-full">
           <p-inputicon class="pi pi-search" />
@@ -59,16 +57,10 @@ interface Product {
           <ng-template #header>
             <tr>
               <th pSortableColumn="name">Name <p-sortIcon field="name" /></th>
-              <th pSortableColumn="category">
-                Category <p-sortIcon field="category" />
-              </th>
+              <th pSortableColumn="category">Category <p-sortIcon field="category" /></th>
 
-              <th pSortableColumn="price">
-                Price <p-sortIcon field="price" />
-              </th>
-              <th pSortableColumn="status">
-                Status <p-sortIcon field="status" />
-              </th>
+              <th pSortableColumn="price">Price <p-sortIcon field="price" /></th>
+              <th pSortableColumn="status">Status <p-sortIcon field="status" /></th>
             </tr>
           </ng-template>
           <ng-template #body let-product>
@@ -82,8 +74,8 @@ interface Product {
                     product.status === 'In Stock'
                       ? 'success'
                       : product.status === 'Low Stock'
-                      ? 'warn'
-                      : 'danger'
+                        ? 'warn'
+                        : 'danger'
                   "
                 >
                   {{ product.status }}
@@ -94,7 +86,7 @@ interface Product {
         </p-table>
       </div>
     </div>
-  `
+  `,
 })
 export class ProductOverviewWidget {
   selectedProduct!: Product;
@@ -138,9 +130,7 @@ export class ProductOverviewWidget {
     this.filteredProducts = this.products.filter(
       (product) =>
         product.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        product.category
-          .toLowerCase()
-          .includes(this.searchQuery.toLowerCase()) ||
+        product.category.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         product.status.toLowerCase().includes(this.searchQuery.toLowerCase())
     );
     setTimeout(() => {

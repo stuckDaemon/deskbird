@@ -8,7 +8,12 @@ import { UniqueConstraintError } from 'sequelize';
 @Injectable()
 export class UserService {
   async findAll() {
-    return await User.findAll();
+    try {
+      return await User.findAll();
+    } catch (error) {
+      logger.error(error);
+      throw error;
+    }
   }
 
   async findByEmail(email: string) {
