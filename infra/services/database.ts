@@ -1,19 +1,15 @@
 import * as aws from '@pulumi/aws';
-import * as pulumi from '@pulumi/pulumi';
-
-// Configurable database password (can pull from config or secrets later)
-const config = new pulumi.Config();
-const dbPassword = config.requireSecret('dbPassword');
+import {secrets} from "../secrets/secrets";
 
 // RDS instance
-const dbInstance = new aws.rds.Instance('deskbird-db', {
+export const dbInstance = new aws.rds.Instance('deskbird-db', {
     allocatedStorage: 20,
     engine: 'postgres',
     engineVersion: '15.3',
     instanceClass: 'db.t3.micro',
-    dbName: 'deskbird',
-    username: 'postgres',
-    password: dbPassword,
+    dbName: secrets.dbName,
+    username: secrets.dbUsername,
+    password: secrets.dbPassword,
     skipFinalSnapshot: true,
     publiclyAccessible: true,
     multiAz: false,

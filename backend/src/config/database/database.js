@@ -13,6 +13,12 @@ const config = {
     define: {
       timestamps: true,
     },
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
     seederStorage: 'sequelize',
   },
 };

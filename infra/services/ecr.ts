@@ -1,7 +1,8 @@
 import * as aws from '@pulumi/aws';
 
 // Explicit ECR repository with delete policy
-const repository = new aws.ecr.Repository('deskbird-backend-repo', {
+export const ecrRepository = new aws.ecr.Repository('deskbird-backend-repo', {
+    name: 'deskbird-backend-repo',
     forceDelete: true,
     imageScanningConfiguration: {
         scanOnPush: true,
@@ -15,7 +16,7 @@ const repository = new aws.ecr.Repository('deskbird-backend-repo', {
 
 // Optional lifecycle policy (auto-delete old images if you want)
 const lifecyclePolicy = new aws.ecr.LifecyclePolicy('deskbird-ecr-lifecycle-policy', {
-    repository: repository.name,
+    repository: ecrRepository.name,
     policy: JSON.stringify({
         rules: [
             {
@@ -35,4 +36,4 @@ const lifecyclePolicy = new aws.ecr.LifecyclePolicy('deskbird-ecr-lifecycle-poli
     }),
 });
 
-export const repositoryUrl = repository.repositoryUrl;
+export const repositoryUrl = ecrRepository.repositoryUrl;

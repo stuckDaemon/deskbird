@@ -1,5 +1,8 @@
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
+import {secrets} from "../secrets/secrets";
+import {dbInstance} from "./database";
+import {ecrRepository} from "./ecr";
 
 const config = new pulumi.Config();
 
@@ -46,6 +49,8 @@ new aws.iam.RolePolicyAttachment('deskbird-task-exec-policy', {
     policyArn: aws.iam.ManagedPolicy.AmazonECSTaskExecutionRolePolicy,
 });
 
+
+// ECS task definition
 const taskDefinition = new aws.ecs.TaskDefinition('deskbird-task', {
     family: 'deskbird-task-family',
     networkMode: 'awsvpc',
@@ -53,19 +58,34 @@ const taskDefinition = new aws.ecs.TaskDefinition('deskbird-task', {
     cpu: '256',
     memory: '512',
     executionRoleArn: taskExecutionRole.arn,
-    containerDefinitions: pulumi.interpolate`[
-    {
-      "name": "deskbird-api",
-      "image": "${aws.ecr.getRepositoryOutput({ name: 'deskbird-backend-repo' }).repositoryUrl}:latest",
-      "portMappings": [
-        {
-          "containerPort": 3000,
-          "hostPort": 3000,
-          "protocol": "tcp"
-        }
-      ]
-    }
-  ]`,
+    containerDefinitions: pulumi
+        .all([ecrRepository.repositoryUrl, dbInstance.address])
+        .apply(([url, rdsAddress]) =>
+            JSON.stringify([
+                {
+                    name: 'deskbird-api',
+                    image: `${url}:latest`,
+                    environment: [
+                        { name: 'DB_DIALECT', value: 'postgres' },
+                        { name: 'DB_HOST', value: `${rdsAddress}`},
+                        { name: 'DB_PORT', value: `${secrets.dbPort}`},
+                        { name: 'DB_USERNAME', value: `${secrets.dbUsername}`},
+                        { name: 'DB_PASSWORD', value: `${secrets.dbPassword}`},
+                        { name: 'DB_NAME', value: `${secrets.dbName}`},
+                        { name: 'DEPLOY_TIMESTAMP', value: new Date().toISOString() }, // Forces a new task definition on every deploy
+                        { name: 'DB_SSL', value: 'true'},
+                    ],
+                    logConfiguration: {
+                        logDriver: 'awslogs',
+                        options: {
+                            'awslogs-group': '/ecs/deskbird-api',
+                            'awslogs-region': aws.config.region,
+                            'awslogs-stream-prefix': 'deskbird',
+                        },
+                    },
+                },
+            ]),
+        ),
 });
 
 // ECS service
