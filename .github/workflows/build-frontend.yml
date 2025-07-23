@@ -1,0 +1,66 @@
+name: Build Frontend
+
+on:
+  pull_request:
+    branches-ignore:
+      - release
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write  # Allow pushing changes back to the PR branch
+
+    steps:
+      # 1. Checkout Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. Install jq
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      # 3. Set up NVM and Node.js
+      - name: Set up NVM and Node.js
+        working-directory: ./frontend
+        run: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm install
+          nvm use
+          node --version
+
+      # 4. Generate Dependencies Hash
+      - name: Generate Dependencies Hash
+        id: deps-hash
+        working-directory: ./frontend
+        run: |
+          jq '{dependencies, devDependencies, peerDependencies}' package.json > dependencies.json
+          echo "hash=$(shasum -a 256 dependencies.json | awk '{print $1}')" >> $GITHUB_ENV
+
+      # 5. Cache Node Modules
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          path: ./frontend/node_modules
+          key: ${{ runner.os }}-node-${{ env.hash }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # 6. Install Dependencies
+      - name: Install Dependencies
+        working-directory: ./frontend
+        run: yarn install --frozen-lockfile
+
+      # 7. Run build
+      - name: Run Build
+        working-directory: ./frontend
+        run: yarn build
