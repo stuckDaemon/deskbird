@@ -1,92 +1,87 @@
-# Frontend Overview
+# Frontend— Angular20 Overview
 
-This Angular frontend is built with scalability and maintainability in mind. Below are the key implementation choices and architectural decisions.
+## 📋Purpose
 
----
-
-## Auth Service
-
-Authentication is handled by a dedicated `AuthService` that:
-
-- Sends login requests and stores the JWT token
-- Decodes the token to extract user info
-- Tracks login state reactively using `BehaviorSubject`
-- Handles token expiration logic on the client side
-
-We centralize login error handling in the service, so components don't have to deal with raw `HttpErrorResponse`.
+The Angular application delivers Deskbird’s user interface. Design choices emphasise modularity, testability, and straightforward extensibility.
 
 ---
 
-## Role-Based Access (Edit Permissions)
+## 🗺️Key Components & Responsibilities
 
-Editing users is restricted by role. This is enforced both:
-
-- **On the frontend**, by conditionally disabling the "Edit" button if the role is not `'user'`
-- **On the backend**, by checking the logged-in user's role server-side
-
-This ensures UI consistency while keeping the backend as the source of truth for authorization.
-
----
-
-## User Table
-
-We use `p-table` from PrimeNG with:
-
-- Lazy loading (pagination handled server-side)
-- Stripe styling and gridlines for clarity
-- Conditional rendering of action buttons based on role
-
-Pagination is managed via the `loadUsersLazy()` method, which calculates offset and limit and fetches the correct slice of data.
+| Concern                | Implementation                                          | Rationale                                                                                           |
+| ---------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **Authentication**     | `AuthService` + HTTPinterceptor                        | Centralises login, JWT storage, and token attachment; keeps components stateless.                   |
+| **Session management** | `session.util.ts` helpers (`setToken`, `getUser`, etc.) | Abstracts storage, simplifies mocking, avoids direct `localStorage` calls across codebase.          |
+| **Role‑based access**  | Angular route guards + conditional UI controls          | Mirrors backend RBAC; disables forbidden actions client‑side while backend remains source of truth. |
+| **API communication**  | `ApiService` (`get`, `post`, `put`, `delete`)           | Single point to prepend `apiUrl`, map errors, and return typed `Observable`s.                       |
+| **Data grid**          | PrimeNG`p-table` with server‑side pagination           | Minimises bundle size, supports lazy loading for large datasets, consistent UI styling.             |
 
 ---
 
-## Component Structure
+## 🔐Authentication Flow
 
-We try to keep things modular and composable:
-
-- `<app-topbar>` handles navigation
-- The user list is a standalone component that interacts with the API layer
-- Modals (e.g. Edit User) are kept clean, use `p-dialog`, and align visually with the login form
-
----
-
-## API Calls (Centralized)
-
-All HTTP requests go through a custom `ApiService` that:
-
-- Automatically prepends the `apiUrl`
-- Handles error mapping centrally
-- Exposes clean methods: `get`, `post`, `put`, `delete`
-- Returns typed observables
-
-No need to repeat error logic or base URLs in components.
+1. **Login request** sent via `AuthService.login()`.
+2. JWT stored securely by `session.util.setToken()`.
+3. HTTP interceptor appends `Authorization: Bearer <token>` to subsequent requests.
+4. `AuthService` exposes reactive auth state through a `BehaviorSubject`, enabling real‑time UI updates.
+5. Client‑side token expiry detection triggers `AuthService.logout()`; refresh workflow queued (*see Next Steps*).
 
 ---
 
-## Auth Interceptor
+## 🧩Component Topology
 
-We use an HTTP interceptor to attach the auth token to every request automatically. This keeps services clean and avoids repetition. It grabs the token from the `session.util` helpers.
+```text
+app/
+├── core/                    # singleton services & interceptors
+│   ├── auth/                # AuthService, AuthInterceptor
+│   ├── api/                 # ApiService
+│   └── session/             # session.util.ts
+├── shared/                  # reusable UI components
+├── features/
+│   └── users/               # user-table, edit-user-dialog
+└── layout/
+    └── topbar/              # app-topbar component
+```
+
+* Each feature module owns its routing configuration.
+* Dialogs (`p-dialog`) are self‑contained, share styles with login for visual coherence.
 
 ---
 
-## Session Service
+## 📊User Table Highlights
 
-Session logic (token and user handling) is abstracted into a simple `session.util.ts`:
-
-- `setToken`, `getToken`, `clearToken`
-- `setUser`, `getUser`, `clearUser`
-
-This avoids any tight coupling between storage and logic, and lets us mock/replace session behavior if needed later.
+| Capability              | Detail                                                           |
+| ----------------------- | ---------------------------------------------------------------- |
+| **Lazy loading**        | `loadUsersLazy()` computes offset/limit and requests paged data. |
+| **Conditional actions** | “Edit” button rendered only for authorised roles.                |
+| **Styling**             | Stripe rows and gridlines via PrimeNG theming for readability.   |
 
 ---
 
-## Final Notes
+## 🔨Build & Deploy
 
-The focus so far has been on:
+```bash
+ng build --configuration production
+aws s3 sync ./dist/deskbird/browser s3://deskbird-app/ --delete
+```
 
-- Keeping code readable and predictable
-- Separating responsibilities (auth, API, view logic)
-- Building only what’s needed, while laying a foundation to scale
+* Builds optimised bundle (`--configuration production`).
+* Synchronises artefacts to the S3 bucket powering the CloudFront distribution.
+* AWS CLI must be configured with write access to `deskbird-app`.
 
-There’s still room to improve — global error toasts, guards per route, or auto-refresh tokens — but for now, the app is lean, secure, and works.
+---
 
+## 🗺️Next Steps
+
+1. **Silent token refresh**
+   Implement refresh‑token flow and interceptor logic to renew sessions automatically.
+2. **Global error handling**
+   Central toast service for consistent UX on HTTP failures.
+3. **Per‑route guards**
+   Granular protection beyond component‑level checks.
+4. **Real‑time grid updates**
+   Integrate WebSocket channel or SWR polling to reflect backend writes without manual reload.
+
+---
+
+The frontend currently prioritises clarity, responsibility segregation, and a lean surface area while providing a foundation for rapid feature growth.

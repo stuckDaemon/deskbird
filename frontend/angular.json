@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "primeng-quickstart": {
+    "deskbird": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/primeng-quickstart",
+            "outputPath": "dist/deskbird",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -64,10 +64,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "primeng-quickstart:build:production"
+              "buildTarget": "deskbird:build:production"
             },
             "development": {
-              "buildTarget": "primeng-quickstart:build:development"
+              "buildTarget": "deskbird:build:development"
             }
           },
           "defaultConfiguration": "development"

@@ -1,76 +1,65 @@
-# Backend
+# Backend— NestJSAPI
 
-This folder contains the backend API for the Deskbird Staff Engineer challenge.
+## 📋Purpose
 
-Built with **NestJS, Sequelize, Postgres**, following modern architecture and authentication patterns.
-
----
-
-## 📋 Design highlights
-
-### ORM choice
-Sequelize selected for explicit control over migrations and runtime behavior.
+This package exposes all server‑side capabilities for the Deskbird platform. It is written in TypeScript using NestJS and Sequelize, backed by PostgreSQL.
 
 ---
 
-### Schema migrations
-- All schema changes tracked via `sequelize-cli`.
-- Auto `sequelize.sync()` used for this scoped project to simplify startup and seeding (not recommended for production).
+## 🗺️Architecture & Design Highlights
+
+| Area                  | Implementation                                               | Motivation                                                             |
+| --------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| **ORM**               | Sequelize                                                    | Fine‑grained migration control and wide community adoption.            |
+| **Schema migrations** | `sequelize-cli`; `SequelizeMeta` extended with `executed_at` | Version‑controlled DDL, audit‑ready timeline of changes.               |
+| **Primary keys**      | UUID(`uuid_generate_v4()`)                                  | Collision‑free across environments, simplifies sharding.               |
+| **Indexing**          | Unique index on `users.email`                                | Enforces email uniqueness without redundant indexes.                   |
+| **Sync strategy**     | `sequelize.sync()` enabled only for this scoped challenge    | Accelerates local start‑up and testing; disabled in production stacks. |
 
 ---
 
-### Metadata column on `SequelizeMeta`
-Custom migration adds `executed_at` timestamp column for tracking when migrations were applied — useful for audits.
+## 🔐Authentication & Authorization
+
+| Concern              | Detail                                 |
+| -------------------- | -------------------------------------- |
+| **Token type**       | JWT (HS256)                            |
+| **TTL**              | 1hour (access token)                  |
+| **Password hashing** | bcrypt, `saltRounds = 10`              |
+| **RBAC**             | `@Roles()` decorator with `RolesGuard` |
+
+**Why 1‑hour expiry?**
+It balances usability and security for the evaluation phase. In production the plan is to introduce short‑lived access tokens plus refresh tokens (see *Next Steps*).
 
 ---
 
-### Indexing strategy
-- `users.email` column has a `unique: true` constraint, creating an implicit unique index.
-- No redundant indexes added intentionally to keep schema lean.
+## 🔨Database Seeding
 
----
-
-### UUID primary keys
-- `users.id` is UUID (`uuid_generate_v4()`).
-- Postgres `uuid-ossp` extension enabled via migration.
-
----
-
-## 🔒 Auth approach
-
-- JWT-based auth (`HS256`, 1-hour expiry).
-- bcrypt for password hashing.
-- Role-based authorization (`@Roles()` decorator + `RolesGuard`).
-
----
-
-## 📝 JWT expiry decision
-
-Why 1 hour?
-- Balance security and session longevity.
-- Production would include refresh tokens and short-lived access tokens for better security posture.
-
----
-
-## 🔨 Database seeding
-
-Reusable script:
-
-```sh
+```bash
 yarn seed ./assets/users.csv
-````
+```
 
-Behavior:
+The script performs:
 
-* Ensures DB schema sync before insert.
-* Accepts CSV with `email`, `password`, `role`.
-* Skips duplicate emails.
-* Hashes passwords securely.
+1. Schema sync (development only).
+2. CSV ingestion (`email`, `password`, `role`).
+3. Password hashing via bcrypt.
+4. Upsert logic to skip duplicates.
 
 ---
 
-## 🔄 Auth workflow diagram
+## 🧭Auth Workflow (Visual)
 
+A sequence diagram is provided in `assets/auth-diagram.png` illustrating login, token issuance, and guard checks.
 ![auth-diagram.png](assets/auth-diagram.png)
 
 ---
+
+## 🗺️Next Steps
+
+1. Introduce refresh‑token endpoint with rotation and revocation list.
+2. Replace `sequelize.sync()` with pure migrations in all environments.
+3. Add integration tests (Jest + Supertest) covering auth, RBAC, and seed logic.
+4. Integrate OpenTelemetry tracing and structured logging (pino) for observability.
+
+The backend is intentionally lean, prioritising clear patterns and a secure foundation for future features.
+

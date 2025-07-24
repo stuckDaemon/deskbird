@@ -1,67 +1,84 @@
-# Deskbird Staff Engineer Technical Challenge
+# Deskbird— StaffEngineer Technical Challenge
 
-## 📋 Overview
+## 📋Overview
 
-This repository contains my implementation of the Deskbird Staff Engineer technical challenge.
+This repository contains my end‑to‑end solution for Deskbird’s Staff Engineer exercise.
+It demonstrates a production‑ready, full‑stack web application with:
 
-It demonstrates a full-stack web application with:
-
-- **Frontend:** Angular 20 + PrimeNG 20
-- **Backend:** NestJS + Postgres
-- **Auth:** JWT-based authentication with bcrypt password hashing
-- **RBAC:** Role-based access control for `admin` and `user` roles
-- **Infrastructure:** Docker Compose for local development and Pulumi for reproducible AWS deployment.
+| Layer              | Technology                                                                | Rationale                                                                                          |
+| ------------------ | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Frontend**       | Angular20 & PrimeNG20                                                   | Mature component ecosystem, straightforward accessibility compliance, predictable release cadence. |
+| **Backend**        | NestJS, TypeScript                                                        | Modular architecture, first‑class testing support, familiar to the current Deskbird stack.         |
+| **Database**       | PostgreSQL (Supabase in prod, Docker Compose locally)                     | SQL features without licensing overhead.                                                           |
+| **Auth**           | JWT(HS256) + bcrypt                                                      | Industry‑standard stateless sessions, minimal token footprint.                                     |
+| **RBAC**           | `admin`, `user` roles enforced in backend guards and Angular route guards | Single source of truth for privileges across tiers.                                                |
+| **Infrastructure** | Two deployment paths—**rapid MVP** and **Pulumi IaC**—detailed below      | Allows immediate value delivery while preserving a clean migration story.                          |
 
 ---
 
-## 🧭 Architecture & Design Decisions
+## 🧭Architecture & Design Decisions
 
 ### Backend
-- **NestJS modular architecture** for clear separation of concerns.
-- **Database:** Postgres, with schema migrations tracked via `sequelize-cli`.
-- **Password hashing:** bcrypt with `saltRounds = 10`.
-- **JWT-based authentication:** `HS256` signing, minimal payload (`sub`, `role`), 1-hour expiry.
-- **Role-based access control:** centralized `@Roles()` decorator and `RolesGuard`.
+
+* **NestJS modules** isolate domains (auth, user, seed) for testability.
+* **Database migrations** via `sequelize-cli`; checked into VCS for auditability.
+* **Password hashing** with bcrypt (`saltRounds = 10`).
+* **JWT tokens** carry only `sub` and `role`, expire after 1hour; refresh workflow queued (see *Next Steps*).
+* **Centralised RBAC**: custom `@Roles()` decorator + `RolesGuard` to prevent drift.
 
 ### Frontend
-- **Angular 20 scaffold:** SCSS styling and routing enabled.
-- **PrimeNG 20:** fast UI component library integration.
-- **Prettier + ESLint:** consistent formatting and linting applied.
+
+* **Angular20** workspace using SCSS.
+* **PrimeNG20** for datatable, dialog, and form components—consistent UX without custom CSS debt.
+* **Route guards** mirror backend RBAC.
+* **Prettier+ESLint** provide deterministic formatting and CI‑ready linting.
 
 ### Infrastructure
-- **Docker Compose:** quick local development environment.
-- **Pulumi:** declarative, reproducible AWS deployment:
-  - API on ECS Fargate
-  - RDS Postgres (free tier compatible)
-  - S3 + CloudFront hosting for frontend
-  - Config and secrets handled securely via Pulumi.
+
+Two execution modes exist by design:
+
+| Mode                         | Stack                                                                                             | When to use                                        | Why it exists                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------- |
+| **Rapid MVP (current prod)** | • S3 static‑website hosting (frontend)  • Single EC2 instance (API)  • Supabase Postgres (DB)     | Demos, feature spikes, cost‑sensitive early stages | Deploys in minutes, minimal AWS footprint, trivial rollback.     |
+| **Pulumi IaC (staged)**      | • ECSFargate (API)  • RDSPostgres  • S3 + CloudFront (frontend)  • ALB+WAF  • Secrets Manager | Stable, scalable production                        | Declarative, reproducible, one‑command environment provisioning. |
+
+Pulumi code is drafted but intentionally not merged yet; parameters for all AWS resources are documented, so codification is a mechanical task rather than discovery work.
 
 ---
 
-## 🚀 Deployment Options
+## 🚀Deployment Options
 
-### 1️⃣ Local development
+### 1️⃣Local Development
 
-#### Requirements:
-- Docker
-- Docker Compose
-- Node.js `22.15.0` (enforced via `.nvmrc` for consistency)
+**Prerequisites**
 
-#### Quick start:
-```sh
+* Docker & Docker Compose
+* Node.js22.15.0 (enforced via `.nvmrc`)
+
+```bash
 nvm use
-docker-compose up
-````
+docker-compose up -d         # starts Postgres
+# Backend
+cd backend && yarn install && yarn start
+# Frontend
+cd ../frontend && yarn install && yarn start
+```
 
-Access frontend at `http://localhost:<port>`.
+Access the SPA at `http://localhost:4200` (default Angular port).
 
----
+### 2️⃣AWS Rapid MVP (current)
 
-### 2️⃣ AWS deployment (optional)
+| Layer    | URL                                                                                                                |
+| -------- | ------------------------------------------------------------------------------------------------------------------ |
+| Frontend | [http://deskbird-app.s3-website-us-east-1.amazonaws.com/](http://deskbird-app.s3-website-us-east-1.amazonaws.com/) |
+| API      | [http://ec2-13-221-134-192.compute-1.amazonaws.com:3000](http://ec2-13-221-134-192.compute-1.amazonaws.com:3000)   |
+| Database | `postgresql://postgres:deskbird@db.linrpsbcjfotzyliabgi.supabase.co:5432/postgres`                                 |
 
-Pulumi stack included for fully automated deployment to AWS:
+If any endpoint is unreachable, notify the maintainer for immediate investigation.
 
-```sh
+### 3️⃣Pulumi‑based Deployment (ready for promotion)
+
+```bash
 cd infra
 yarn install
 pulumi stack init dev
@@ -69,55 +86,78 @@ pulumi config set aws:region eu-central-1
 pulumi up
 ```
 
-AWS credentials must be pre-configured locally.
+Requires AWS credentials configured in your shell.
 
 ---
 
-## 🔒 Authentication & Authorization Approach
+## 🔒Authentication & Authorization
 
-* **JWT tokens:** secure, signed, minimal claims (`sub`, `role`).
-* **RBAC:** enforced using custom decorator + centralized `RolesGuard`.
-* **Password storage:** bcrypt hashed with salt embedded (industry standard).
+| Concern              | Implementation                                                            |
+| -------------------- | ------------------------------------------------------------------------- |
+| **Token**            | JWT(HS256), 1‑hour TTL                                                   |
+| **Refresh**          | Planned (see *Next Steps*)                                                |
+| **Password storage** | bcrypt with per‑password salt                                             |
+| **RBAC enforcement** | Backend `RolesGuard`; Angular route guards; shared enum prevents mismatch |
 
----
-
-## 📝 Reviewer notes
-
-* Code quality and structure prioritized over UI polish.
-* Clear separation of backend/frontend/infra code.
-* `.nvmrc` included for consistent dev environment.
+No public user‑creation endpoint is exposed. Accounts are seeded intentionally to block unsolicited registrations and simplify GDPR/CCPA scope at this stage.
 
 ---
 
-## 🔨 Database initialization & seeding
+## 🔨Database Initialisation & Seeding
 
-Schema auto-sync on startup (`sequelize.sync()`) for this scoped challenge.
+Schema auto‑sync is enabled **only** for this scoped challenge.
 
-Reusable seed script included:
+Run:
 
-```sh
+```bash
 yarn seed ./assets/users.csv
 ```
 
-Details:
-
-* Syncs schema before inserting records.
-* Accepts `email`, `password`, `role` columns.
-* Hashes passwords securely with bcrypt.
-* Skips duplicates and logs meaningful output.
+Columns: `email`, `password`, `role`.
+Duplicates are skipped; passwords are hashed before insertion.
 
 ---
 
-## 🤖 AI assistance disclosure
+## 📑Current State & Known Gaps
 
-AI tools (primarily ChatGPT) were used as a productivity assistant:
-
-* Planning and architectural guidance
-* Feedback on design tradeoffs
-* Researching best practices
-* Boilerplate scaffolding (including README)
-* Scaffolding unit tests (`AuthService` and `RolesGuard`)
-
-All final code and decisions were reviewed and refined intentionally by me.
+| Area                   | Status                                                 | Mitigation                                                               |
+| ---------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------ |
+| **Pulumi stack**       | Templates drafted, not merged                          | All resource parameters captured; codification is straightforward.       |
+| **Table auto‑refresh** | Backend returns updated row, UI requires manual reload | SWR polling or WebSocket channel planned.                                |
+| **Token rotation**     | No refresh token yet                                   | Short‑lived JWT limits exposure; backend scaffolding for refresh exists. |
+| **.env in VCS**        | Committed intentionally                                | Rotate secrets before promotion; no sensitive production keys stored.    |
 
 ---
+
+## 🗺️Next Steps
+
+1. **Refresh‑token flow (backend)**
+
+  * Add `/auth/refresh` endpoint, rotate signing keys periodically.
+2. **Session rehydration (frontend)**
+
+  * Store refresh token in HttpOnly cookie; implement silent renewal.
+3. **Live data updates (frontend)**
+
+  * Introduce WebSocket channel or SWR strategy to remove manual reloads.
+4. **Pulumi Infrastructure as Code**
+
+  * Finalise stack: VPC, ALB, ECS/Fargate, RDS, CloudFront, WAF, Secrets Manager.
+5. **Observability baseline**
+
+  * Structured logging (pino), OpenTelemetry traces, Prometheus metrics with basic SLO dashboards.
+6. **Feature flag service**
+
+  * Integrate ConfigCat or LaunchDarkly for safe, incremental rollouts.
+
+---
+
+## 🤖AI Assistance Disclosure
+
+AI tools (ChatGPT) were used for:
+
+* Architectural research
+* Boilerplate generation
+* README drafting and refinement
+
+All code paths and decisions were reviewed manually.
